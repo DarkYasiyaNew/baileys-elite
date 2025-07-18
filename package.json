@@ -17,10 +17,6 @@
   "repository": {
     "url": "https://github.com/DarkYasiyaNew/baileys-elite.git"
   },
-  "publishConfig": {
-    "access": "public",
-    "tag": "beta"
-  },
   "license": "MIT",
   "author": "DarkYasiya",
   "creator": "Adhiraj Singh",

@@ -1,6 +1,6 @@
 {
-  "name": "baileys-elite",
-  "version": "0.0.9-beta.1",
+  "name": "@dark-yasiya/baileys-elite",
+  "version": "1.0.0",
   "description": "WhatsApp API",
   "keywords": [
     "whatsapp",
@@ -13,12 +13,12 @@
     "baileys-elite",
     "multi-device"
   ],
-  "homepage": "https://github.com/shizo-devs/baileys",
+  "homepage": "https://github.com/DarkYasiyaNew/baileys-elite",
   "repository": {
-    "url": "https://github.com/shizo-devs/baileys.git"
+    "url": "https://github.com/DarkYasiyaNew/baileys-elite.git"
   },
   "license": "MIT",
-  "author": "Yugesh Singh",
+  "author": "DarkYasiya",
   "creator": "Adhiraj Singh",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -55,7 +55,7 @@
     "axios": "^1.6.0",
     "cache-manager": "^5.7.6",
     "libphonenumber-js": "^1.10.20",
-    "libsignal": "git+https://github.com/AmilaPrabathKumara/libsignal-node.git",
+    "libsignal": "git+https://github.com/DarkYasiyaNew/libsignal-node.git",
     "lodash": "^4.17.21",
     "music-metadata": "^7.12.3",
     "@cacheable/node-cache": "1.4.0",

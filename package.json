@@ -1,6 +1,6 @@
 {
   "name": "@dark-yasiya/baileys-elite",
-  "version": "1.0.0.beta",
+  "version": "1.1.1-beta",
   "description": "WhatsApp API",
   "publishConfig": {
     "access": "public"

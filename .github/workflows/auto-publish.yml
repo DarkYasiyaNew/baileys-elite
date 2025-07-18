@@ -147,7 +147,7 @@ jobs:
         if: steps.get_previous_version.outputs.version_increased == 'true' && steps.get_previous_version.outputs.is_beta == 'false'
         uses: softprops/action-gh-release@v1
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GIT_TOKEN }}
           tag_name: v${{ steps.get_previous_version.outputs.current_version }}
           name: v${{ steps.get_previous_version.outputs.current_version }}
           body: ${{ steps.generate_changelog.outputs.changelog }}
@@ -160,7 +160,7 @@ jobs:
         if: steps.get_previous_version.outputs.version_increased == 'true' && steps.get_previous_version.outputs.is_beta == 'true'
         uses: softprops/action-gh-release@v1
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GIT_TOKEN }}
           tag_name: v${{ steps.get_previous_version.outputs.current_version }}
           name: v${{ steps.get_previous_version.outputs.current_version }} (Beta)
           body: |

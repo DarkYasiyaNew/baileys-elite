@@ -58,13 +58,13 @@
 ### 📂 In package.json:
 ```json
 "dependencies": {
-    "baileys-elite": "*"
+    "@whiskeysockets/baileys": "npm:@dark-yasiya/baileys-elite@latest"
 }
 ```
 
 ### ⚙️ Terminal Installation:
 ```bash
-npm install baileys-elite
+npm install @dark-yasiya/baileys-elite@latest
 ```
 
 ### 🔌 Import:
@@ -73,14 +73,14 @@ npm install baileys-elite
 
 ```typescript
 // ESM 
-import makeWASocket from 'baileys-elite'
+import makeWASocket from '@dark-yasiya/baileys-elite'
 ```
 </div>
 <div style="background: rgba(234, 179, 8, 0.1); border-radius: 5px; padding: 10px; flex: 1;">
 
 ```javascript
 // CommonJS
-const { default: makeWASocket } = require("baileys-elite")
+const { default: makeWASocket } = require("@dark-yasiya/baileys-elite")
 ```
 </div>
 </div>

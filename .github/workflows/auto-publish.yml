@@ -1,14 +1,17 @@
-name: Publish Release
+name: 📦 Publish Release
 
 on:
   push:
     tags:
       - 'v*'
 
-permissions: write-all
+permissions:
+  contents: write
+  packages: write
 
 jobs:
-  publish-release:
+  publish:
+    name: 🔁 Publish to npm
     runs-on: ubuntu-latest
 
     steps:
@@ -26,7 +29,7 @@ jobs:
           node-version: '20.x'
           registry-url: 'https://registry.npmjs.org'
 
-      - name: ⚙️ Enable Corepack + Use Yarn 4
+      - name: ⚙️ Enable Corepack + Use Yarn 4.9.2
         run: |
           corepack enable
           corepack prepare yarn@4.9.2 --activate
@@ -45,15 +48,15 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: 🚀 Publish to npm (default name)
+      - name: 🚀 Publish to npm as 'baileys-elite'
         run: npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      # Optional: publish under scoped name
-      - name: 🚀 Publish to npm (@scope)
+      - name: 🚀 Publish to npm as '@dark-yasiya/baileys-elite'
         run: |
           npx json -I -f package.json -e "this.name='@dark-yasiya/baileys-elite'"
           npm publish --access public
+          npx json -I -f package.json -e "this.name='baileys-elite'"
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

@@ -47,26 +47,20 @@ jobs:
           echo "Version increased: ${{ steps.get_previous_version.outputs.version_increased }}"
           echo "Is beta version: ${{ steps.get_previous_version.outputs.is_beta }}"
 
-      - name: Setup Node
+      - name: Setup Node.js
         if: steps.get_previous_version.outputs.version_increased == 'true'
-        uses: actions/setup-node@v3.6.0
+        uses: actions/setup-node@v3
         with:
           node-version: 20.x
           registry-url: "https://registry.npmjs.org"
 
-      - name: Get yarn cache directory path
+      - name: Prepare Yarn v4.9.2 with Corepack
         if: steps.get_previous_version.outputs.version_increased == 'true'
-        id: yarn-cache-dir-path
-        run: echo "dir=$(yarn cache dir)" >> $GITHUB_OUTPUT
+        run: corepack prepare yarn@4.9.2 --activate
 
-      - uses: actions/cache@v3
+      - name: Confirm Yarn version
         if: steps.get_previous_version.outputs.version_increased == 'true'
-        id: yarn-cache
-        with:
-          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-
+        run: yarn --version
 
       - name: Install Dependencies
         if: steps.get_previous_version.outputs.version_increased == 'true'
@@ -74,7 +68,7 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Create version tag
+      - name: Create Git Tag
         if: steps.get_previous_version.outputs.version_increased == 'true'
         run: |
           VERSION=v${{ steps.get_previous_version.outputs.current_version }}
@@ -90,13 +84,10 @@ jobs:
           ORIGINAL_NAME=$(node -p "require('./package.json').name")
           echo "original_name=$ORIGINAL_NAME" >> $GITHUB_OUTPUT
 
-      - name: Publish in NPM - Regular Version
+      - name: Publish to NPM (Stable)
         if: steps.get_previous_version.outputs.version_increased == 'true' && steps.get_previous_version.outputs.is_beta == 'false'
         run: |
-          # First publish with original package name
           npm publish --access public
-          
-          # Change package name and publish as baileys-elite if different
           if [ "$ORIGINAL_NAME" != "baileys-elite" ]; then
             ORIGINAL_NAME_BACKUP=$ORIGINAL_NAME
             npx json -I -f package.json -e "this.name='baileys-elite'"
@@ -107,14 +98,11 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           ORIGINAL_NAME: ${{ steps.get_original_name.outputs.original_name }}
-      
-      - name: Publish in NPM - Beta Version
+
+      - name: Publish to NPM (Beta)
         if: steps.get_previous_version.outputs.version_increased == 'true' && steps.get_previous_version.outputs.is_beta == 'true'
         run: |
-          # First publish with original package name
           npm publish --access public --tag beta
-          
-          # Change package name and publish as baileys-elite if different
           if [ "$ORIGINAL_NAME" != "baileys-elite" ]; then
             ORIGINAL_NAME_BACKUP=$ORIGINAL_NAME
             npx json -I -f package.json -e "this.name='baileys-elite'"
@@ -130,7 +118,7 @@ jobs:
         if: steps.get_previous_version.outputs.version_increased == 'true'
         id: generate_changelog
         run: |
-          changelog=$(npm run changelog:last --silent)
+          changelog=$(npm run changelog:last --silent || echo "No changelog available.")
           echo "changelog<<EOF" >> $GITHUB_OUTPUT
           echo "${changelog}" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
@@ -139,11 +127,11 @@ jobs:
         if: steps.get_previous_version.outputs.version_increased == 'true'
         run: npm pack
 
-      - name: Rename Pack
+      - name: Rename Package
         if: steps.get_previous_version.outputs.version_increased == 'true'
         run: mv *.tgz baileys-elite.tgz
 
-      - name: Create GitHub Release (Regular)
+      - name: GitHub Release (Stable)
         if: steps.get_previous_version.outputs.version_increased == 'true' && steps.get_previous_version.outputs.is_beta == 'false'
         uses: softprops/action-gh-release@v1
         with:
@@ -153,10 +141,9 @@ jobs:
           body: ${{ steps.generate_changelog.outputs.changelog }}
           draft: false
           prerelease: false
-          files: |
-            baileys-elite.tgz
+          files: baileys-elite.tgz
 
-      - name: Create GitHub Release (Beta)
+      - name: GitHub Release (Beta)
         if: steps.get_previous_version.outputs.version_increased == 'true' && steps.get_previous_version.outputs.is_beta == 'true'
         uses: softprops/action-gh-release@v1
         with:
@@ -165,9 +152,8 @@ jobs:
           name: v${{ steps.get_previous_version.outputs.current_version }} (Beta)
           body: |
             ## Beta Release
-            
+
             ${{ steps.generate_changelog.outputs.changelog }}
           draft: false
           prerelease: true
-          files: |
-            baileys-elite.tgz
+          files: baileys-elite.tgz

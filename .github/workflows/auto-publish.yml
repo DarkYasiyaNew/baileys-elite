@@ -12,6 +12,7 @@ permissions: write-all
 jobs:
   check-and-publish:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -32,8 +33,6 @@ jobs:
           else
             echo "version_increased=false" >> $GITHUB_OUTPUT
           fi
-          
-          # Check if version is beta
           if [[ "$CURRENT_VERSION" == *-beta* ]]; then
             echo "is_beta=true" >> $GITHUB_OUTPUT
           else
@@ -47,18 +46,22 @@ jobs:
           echo "Version increased: ${{ steps.get_previous_version.outputs.version_increased }}"
           echo "Is beta version: ${{ steps.get_previous_version.outputs.is_beta }}"
 
-      - name: Setup Node.js
+      - name: Setup Node
         if: steps.get_previous_version.outputs.version_increased == 'true'
         uses: actions/setup-node@v3
         with:
           node-version: 20.x
           registry-url: "https://registry.npmjs.org"
 
-      - name: Prepare Yarn v4.9.2 with Corepack
+      - name: Enable Corepack
+        if: steps.get_previous_version.outputs.version_increased == 'true'
+        run: corepack enable
+
+      - name: Prepare Yarn 4.9.2
         if: steps.get_previous_version.outputs.version_increased == 'true'
         run: corepack prepare yarn@4.9.2 --activate
 
-      - name: Confirm Yarn version
+      - name: Check Yarn Version
         if: steps.get_previous_version.outputs.version_increased == 'true'
         run: yarn --version
 
@@ -68,7 +71,7 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Create Git Tag
+      - name: Create version tag
         if: steps.get_previous_version.outputs.version_increased == 'true'
         run: |
           VERSION=v${{ steps.get_previous_version.outputs.current_version }}
@@ -84,7 +87,7 @@ jobs:
           ORIGINAL_NAME=$(node -p "require('./package.json').name")
           echo "original_name=$ORIGINAL_NAME" >> $GITHUB_OUTPUT
 
-      - name: Publish to NPM (Stable)
+      - name: Publish in NPM - Regular Version
         if: steps.get_previous_version.outputs.version_increased == 'true' && steps.get_previous_version.outputs.is_beta == 'false'
         run: |
           npm publish --access public
@@ -99,7 +102,7 @@ jobs:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           ORIGINAL_NAME: ${{ steps.get_original_name.outputs.original_name }}
 
-      - name: Publish to NPM (Beta)
+      - name: Publish in NPM - Beta Version
         if: steps.get_previous_version.outputs.version_increased == 'true' && steps.get_previous_version.outputs.is_beta == 'true'
         run: |
           npm publish --access public --tag beta
@@ -127,11 +130,11 @@ jobs:
         if: steps.get_previous_version.outputs.version_increased == 'true'
         run: npm pack
 
-      - name: Rename Package
+      - name: Rename Pack
         if: steps.get_previous_version.outputs.version_increased == 'true'
         run: mv *.tgz baileys-elite.tgz
 
-      - name: GitHub Release (Stable)
+      - name: Create GitHub Release (Regular)
         if: steps.get_previous_version.outputs.version_increased == 'true' && steps.get_previous_version.outputs.is_beta == 'false'
         uses: softprops/action-gh-release@v1
         with:
@@ -141,9 +144,10 @@ jobs:
           body: ${{ steps.generate_changelog.outputs.changelog }}
           draft: false
           prerelease: false
-          files: baileys-elite.tgz
+          files: |
+            baileys-elite.tgz
 
-      - name: GitHub Release (Beta)
+      - name: Create GitHub Release (Beta)
         if: steps.get_previous_version.outputs.version_increased == 'true' && steps.get_previous_version.outputs.is_beta == 'true'
         uses: softprops/action-gh-release@v1
         with:
@@ -152,8 +156,9 @@ jobs:
           name: v${{ steps.get_previous_version.outputs.current_version }} (Beta)
           body: |
             ## Beta Release
-
+            
             ${{ steps.generate_changelog.outputs.changelog }}
           draft: false
           prerelease: true
-          files: baileys-elite.tgz
+          files: |
+            baileys-elite.tgz
